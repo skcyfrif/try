@@ -3,36 +3,38 @@ version: '3.8'
 services:
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: .  # Path to the directory containing the Dockerfile
+      dockerfile: Dockerfile  # Specify Dockerfile to build the app image
     volumes:
-      - ./app:/var/www/html
+      - ./app:/var/www/html  # Mount local app directory to container's /var/www/html
     networks:
       - app-network
+    depends_on:
+      - db  # Ensure db service starts before the app
 
   web:
-    image: nginx:latest
+    image: nginx:latest  # Use the latest official Nginx image
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - ./app:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf  # Custom Nginx config file
+      - ./app:/var/www/html  # Mount local app directory to Nginx container
     ports:
-      - "80:80"
+      - "80:80"  # Expose port 80 to the host machine
     depends_on:
-      - app
+      - app  # Ensure app service starts before the web service
     networks:
       - app-network
 
   db:
-    image: mysql:5.7
+    image: mysql:5.7  # Use the official MySQL 5.7 image
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: cakephp
-      MYSQL_USER: cakeuser
-      MYSQL_PASSWORD: cakepassword
+      MYSQL_ROOT_PASSWORD: root_password  # Root password for MySQL
+      MYSQL_DATABASE: cakephp  # The database to create
+      MYSQL_USER: cakeuser  # User for the MySQL database
+      MYSQL_PASSWORD: cakepassword  # Password for the user
     volumes:
-      - ./db:/docker-entrypoint-initdb.d
+      - ./db:/docker-entrypoint-initdb.d  # Initialization scripts to run when the container starts
     ports:
-      - "3306:3306"
+      - "3306:3306"  # Expose port 3306 to the host machine
     networks:
       - app-network
 

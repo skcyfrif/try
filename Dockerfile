@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
 # Set the working directory
 WORKDIR /var/www/html
 
-# Copy project files
+# Copy project files (Make sure ./app exists)
 COPY ./app /var/www/html
 
 # Install Composer
