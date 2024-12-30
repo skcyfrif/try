@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'cyfdoc/first/your-app:latest'
+        DOCKER_CREDENTIALS_ID = 'cyfdoc'
     }
 
     stages {
@@ -15,6 +16,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    echo 'Building Docker Image...'
                     sh 'docker build -t $DOCKER_IMAGE .'
                 }
             }
@@ -22,7 +24,10 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+                script {
+                    echo 'Pushing Docker Image to Registry...'
+                }
+                withDockerRegistry([credentialsId: "${DOCKER_CREDENTIALS_ID}", url: 'https://index.docker.io/v1/']) {
                     sh 'docker push $DOCKER_IMAGE'
                 }
             }
@@ -31,8 +36,11 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 script {
-                    sh 'docker-compose down'
-                    sh 'docker-compose up -d'
+                    echo 'Deploying using Docker Compose...'
+                    sh '''
+                    docker-compose down || echo "No containers to stop."
+                    docker-compose up -d
+                    '''
                 }
             }
         }
@@ -42,8 +50,11 @@ pipeline {
         always {
             echo 'Pipeline completed.'
         }
+        success {
+            echo 'Pipeline executed successfully!'
+        }
         failure {
-            echo 'Pipeline failed.'
+            echo 'Pipeline failed. Check the logs for details.'
         }
     }
 }
