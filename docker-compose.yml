@@ -6,7 +6,7 @@ services:
       context: .  # Path to the directory containing the Dockerfile
       dockerfile: Dockerfile  # Specify Dockerfile to build the app image
     volumes:
-      - ./app:/var/www/html  # Mount local app directory to container's /var/www/html
+      - ./:/var/www/html  # Mount local app directory to container's /var/www/html
     networks:
       - app-network
     depends_on:
@@ -16,7 +16,7 @@ services:
     image: nginx:latest  # Use the latest official Nginx image
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf  # Custom Nginx config file
-      - ./app:/var/www/html  # Mount local app directory to Nginx container
+      - ./:/var/www/html  # Mount local app directory to Nginx container
     ports:
       - "80:80"  # Expose port 80 to the host machine
     depends_on:

@@ -12,9 +12,9 @@ pipeline {
             steps {
                 script {
                     // Check if ./app directory exists in the workspace
-                    def status = sh(script: 'ls -alh ./app', returnStatus: true)
+                    def status = sh(script: 'ls -alh .', returnStatus: true)
                     if (status != 0) {
-                        error "Directory ./app does not exist or is not found"
+                        error "Directory . does not exist or is not found"
                     }
                     // Build Docker images using docker-compose
                     def buildStatus = sh(script: 'docker-compose build', returnStatus: true)
