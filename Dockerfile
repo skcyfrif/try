@@ -1,9 +1,12 @@
 FROM php:7.4-fpm
 
-# Install system dependencies needed for PHP extensions
+# Install system dependencies needed for PHP extensions (including GD dependencies)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libicu-dev \
     libzip-dev \
+    libpng-dev \  # Install libpng
+    libjpeg-dev \  # Install libjpeg (needed for GD)
+    libfreetype6-dev \  # Install freetype (needed for GD)
     && rm -rf /var/lib/apt/lists/*
 
 # Configure and install PHP extensions
@@ -25,7 +28,7 @@ RUN composer install --no-interaction --no-dev --optimize-autoloader
 # Expose port 9000
 EXPOSE 9000
 
-# Set user and group to nobody:nogroup for security.
+# Set user and group to nobody:nogroup for security
 RUN groupadd -g 1000 nobody && useradd -u 1000 -g nobody -s /bin/false -m nobody
 USER nobody
 
