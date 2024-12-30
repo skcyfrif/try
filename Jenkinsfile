@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "cyfdoc/shiv" // Use your Docker Hub username/repository
-        TAG = "latest"
+        TAG = "latest1"
     }
 
     stages {
