@@ -2,62 +2,48 @@ pipeline {
     agent any
 
     environment {
-        // Define environment variables for convenience (e.g., for Docker Compose, git, etc.)
-        DOCKER_COMPOSE_PATH = './docker-compose.yml'
+        DOCKER_IMAGE = 'cyfdoc/first/your-app:latest'
     }
 
     stages {
-        // Stage 1: Clone the repository from GitHub
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/skcyfrif/try.git', credentialsId: 'gitpat'
+                git branch: 'main', url: 'https://github.com/skcyfrif/try.git'
             }
         }
 
-        // Stage 2: Build Docker images using Docker Compose
-        stage('Build Docker Images') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    // Ensure Docker Compose is available
-                    sh 'docker-compose -v'
-                    
-                    // Run the build command to create the images
-                    sh 'docker-compose -f ${DOCKER_COMPOSE_PATH} build'
+                    sh 'docker build -t $DOCKER_IMAGE .'
                 }
             }
         }
 
-        // Stage 3: Run Docker containers in detached mode
-        stage('Run Docker Containers') {
+        stage('Push Docker Image') {
             steps {
-                script {
-                    // Start the containers in detached mode
-                    sh 'docker-compose -f ${DOCKER_COMPOSE_PATH} up -d'
+                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+                    sh 'docker push $DOCKER_IMAGE'
                 }
             }
         }
 
-        // Stage 4: Run tests (optional)
-        stage('Run Tests') {
+        stage('Deploy with Docker Compose') {
             steps {
-                // Add commands to run tests here if needed, e.g., PHPUnit, Selenium, etc.
-                echo 'Running tests...'
-                // For example: sh 'docker-compose exec app vendor/bin/phpunit'
+                script {
+                    sh 'docker-compose down'
+                    sh 'docker-compose up -d'
+                }
             }
         }
     }
 
     post {
         always {
-            echo 'Cleaning up resources...'
-            // Tear down the containers regardless of success or failure
-            sh 'docker-compose -f ${DOCKER_COMPOSE_PATH} down'
-        }
-        success {
-            echo 'Pipeline completed successfully!'
+            echo 'Pipeline completed.'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed.'
         }
     }
 }
