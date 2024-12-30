@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'cyfdoc/first/your-app:latest'
+        DOCKER_IMAGE = 'cyfdoc/shiv/your-app:latest'
         DOCKER_CREDENTIALS_ID = 'cyfdoc'
     }
 
