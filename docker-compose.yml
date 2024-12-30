@@ -30,10 +30,10 @@ services:
   db:
     image: mysql:8 # Use a more recent, supported MySQL version
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # Use environment variables for secrets
-      MYSQL_DATABASE: cakephp
-      MYSQL_USER: cakeuser
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD} # Use environment variables for secrets
+      MYSQL_ROOT_PASSWORD: root # Use environment variables for secrets
+      MYSQL_DATABASE: cyfrif_campaign
+      MYSQL_USER: campaign_user
+      MYSQL_PASSWORD: campaign_password # Use environment variables for secrets
     volumes:
       - ./db:/docker-entrypoint-initdb.d
     ports:

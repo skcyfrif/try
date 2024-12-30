@@ -6,26 +6,45 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/skcyfrif/try.git', credentialsId: 'gitpat'
             }
         }
-
-        stage('Build Docker Images') {
+    }
+    
+}
+pipeline {
+    agent any
+   
+    }
+    stages {
+        stage('Clone Repository') {
             steps {
-                sh 'docker-compose build --no-cache'
+                git branch: 'main', url: 'https://github.com/skcyfrif/try.git', credentialsId: 'gitpat'
             }
         }
 
-        stage('Run Containers') {
+        stage('Build Docker Images') {
             steps {
-                sh 'docker-compose up -d'
+                sh '''
+                docker-compose build
+                '''
+            }
+        }
+
+        stage('Run Docker Containers') {
+            steps {
+                sh '''
+                docker-compose up -d
+                '''
             }
         }
     }
     post {
         always {
-            echo 'Cleaning up resources'
-            sh 'docker-compose down'
+            echo 'Cleaning up resources...'
+            sh '''
+            docker-compose down
+            '''
         }
         success {
-            echo 'Pipeline succeeded!'
+            echo 'Pipeline completed successfully!'
         }
         failure {
             echo 'Pipeline failed!'
