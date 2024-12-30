@@ -2,33 +2,34 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'cyfdoc/shiv/your-app:latest'
-        DOCKER_CREDENTIALS_ID = 'cyfdoc'
+        DOCKER_IMAGE = "cyfdoc/shiv" // Use your Docker Hub username/repository
+        TAG = "latest"
     }
 
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/skcyfrif/try.git'
+                // Checkout source code
+                checkout scm
             }
         }
+        
+        stage('Build or Pull Docker Image') {
+			steps {
+				sh '''
+                docker images -q ${DOCKER_IMAGE}:${TAG} && docker pull ${DOCKER_IMAGE}:${TAG} || docker build -t ${DOCKER_IMAGE}:${TAG} .
+                '''
+			}
+		}
 
-        stage('Build Docker Image') {
+        stage('Push to Docker Hub') {
             steps {
-                script {
-                    echo 'Building Docker Image...'
-                    sh 'docker build -t $DOCKER_IMAGE .'
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    echo 'Pushing Docker Image to Registry...'
-                }
-                withDockerRegistry([credentialsId: "${DOCKER_CREDENTIALS_ID}", url: 'https://index.docker.io/v1/']) {
-                    sh 'docker push $DOCKER_IMAGE'
+                echo 'Pushing Docker Image to Docker Hub...'
+                withCredentials([usernamePassword(credentialsId: 'cyfdoc', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh '''
+                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                        docker push ${DOCKER_IMAGE}
+                    '''
                 }
             }
         }
