@@ -1,4 +1,4 @@
-version: "3.9" # Use a more recent version
+version: "3.9"  # Latest version (ensure Docker Compose 1.27+ is used)
 
 services:
   app:
@@ -12,8 +12,7 @@ services:
     depends_on:
       - db
     ports:
-      - "9000:9000" # Expose the application port (assuming port 9000 from your Dockerfile)
-
+      - "9000:9000"  # Expose PHP-FPM port (assumed 9000)
 
   web:
     image: nginx:latest
@@ -21,31 +20,30 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./:/var/www/html
     ports:
-      - "80:80"
+      - "80:80"  # Expose HTTP port
     depends_on:
       - app
     networks:
       - app-network
 
   db:
-    image: mysql:8 # Use a more recent, supported MySQL version
+    image: mysql:8  # Updated to a more recent MySQL version
     environment:
-      MYSQL_ROOT_PASSWORD: root # Use environment variables for secrets
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: cyfrif_campaign
       MYSQL_USER: campaign_user
-      MYSQL_PASSWORD: campaign_password # Use environment variables for secrets
+      MYSQL_PASSWORD: campaign_password
     volumes:
-      - ./db:/docker-entrypoint-initdb.d
+      - ./db:/docker-entrypoint-initdb.d  # Initialize MySQL with custom scripts
     ports:
-      - "3306:3306"
+      - "3306:3306"  # Expose MySQL port
     networks:
       - app-network
-    healthcheck: # Add healthcheck for database
+    healthcheck:
       test: ["CMD", "mysqladmin", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
-
 
 networks:
   app-network:
