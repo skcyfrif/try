@@ -16,8 +16,9 @@ pipeline {
                     if (status != 0) {
                         error "Directory . does not exist or is not found"
                     }
-                    // Build Docker images using docker-compose
-                    def buildStatus = sh(script: 'docker-compose build', returnStatus: true)
+
+                    // Build Docker images using docker-compose with verbose output for debugging
+                    def buildStatus = sh(script: 'docker-compose build --no-cache', returnStatus: true)
                     if (buildStatus != 0) {
                         error "Docker image build failed"
                     }
@@ -28,8 +29,8 @@ pipeline {
         stage('Run Containers') {
             steps {
                 script {
-                    // Run containers using docker-compose
-                    def runStatus = sh(script: 'docker-compose up -d', returnStatus: true)
+                    // Run containers using docker-compose with verbose output for debugging
+                    def runStatus = sh(script: 'docker-compose up -d --build', returnStatus: true)
                     if (runStatus != 0) {
                         error "Docker containers failed to start"
                     }

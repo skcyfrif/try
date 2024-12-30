@@ -1,32 +1,26 @@
 FROM php:7.4-fpm
 
-# Install required PHP extensions
+# Install system dependencies for PHP extensions
 RUN apt-get update && apt-get install -y \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    git \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+    libicu-dev \
+    libzip-dev \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install intl zip
 
-# Set the working directory
+# Install other PHP extensions you might need (e.g. GD, PDO)
+RUN docker-php-ext-install gd pdo_mysql
+
+# Install Composer (already in your Dockerfile)
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy your application files
 WORKDIR /var/www/html
-
-# Copy project files (Make sure ./app exists)
 COPY . /var/www/html
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Run Composer Install
 RUN composer install
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
-
-# Expose port 9000 for PHP-FPM
+# Expose port 9000
 EXPOSE 9000
 
 CMD ["php-fpm"]
