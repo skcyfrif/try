@@ -1,42 +1,51 @@
-version: '3.8'
+version: "3.9" # Use a more recent version
 
 services:
   app:
     build:
-      context: .  # Path to the directory containing the Dockerfile
-      dockerfile: Dockerfile  # Specify Dockerfile to build the app image
+      context: .
+      dockerfile: Dockerfile
     volumes:
-      - ./:/var/www/html  # Mount local app directory to container's /var/www/html
+      - ./:/var/www/html
     networks:
       - app-network
     depends_on:
-      - db  # Ensure db service starts before the app
+      - db
+    ports:
+      - "9000:9000" # Expose the application port (assuming port 9000 from your Dockerfile)
+
 
   web:
-    image: nginx:latest  # Use the latest official Nginx image
+    image: nginx:latest
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf  # Custom Nginx config file
-      - ./:/var/www/html  # Mount local app directory to Nginx container
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./:/var/www/html
     ports:
-      - "80:80"  # Expose port 80 to the host machine
+      - "80:80"
     depends_on:
-      - app  # Ensure app service starts before the web service
+      - app
     networks:
       - app-network
 
   db:
-    image: mysql:5.7  # Use the official MySQL 5.7 image
+    image: mysql:8 # Use a more recent, supported MySQL version
     environment:
-      MYSQL_ROOT_PASSWORD: root_password  # Root password for MySQL
-      MYSQL_DATABASE: cakephp  # The database to create
-      MYSQL_USER: cakeuser  # User for the MySQL database
-      MYSQL_PASSWORD: cakepassword  # Password for the user
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # Use environment variables for secrets
+      MYSQL_DATABASE: cakephp
+      MYSQL_USER: cakeuser
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD} # Use environment variables for secrets
     volumes:
-      - ./db:/docker-entrypoint-initdb.d  # Initialization scripts to run when the container starts
+      - ./db:/docker-entrypoint-initdb.d
     ports:
-      - "3306:3306"  # Expose port 3306 to the host machine
+      - "3306:3306"
     networks:
       - app-network
+    healthcheck: # Add healthcheck for database
+      test: ["CMD", "mysqladmin", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
 
 networks:
   app-network:
