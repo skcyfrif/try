@@ -1,50 +1,39 @@
-version: '3.8'
-
+---
+version: "3"
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - .:/var/www/html  # Sync local code to the container
-    networks:
-      - app-network
-    depends_on:
-      - db
-    ports:
-      - "9000:9000"  # Expose the application port
-
-  web:
-    image: nginx:latest
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - .:/var/www/html  # Sync local files for Nginx to serve
-    ports:
-      - "80:80"  # Expose the web server
-    depends_on:
-      - app
-    networks:
-      - app-network
-
-  db:
-    image: mysql:8  # Use a supported MySQL version
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: cyfrif_campaign
-      MYSQL_USER: campaign_user
-      MYSQL_PASSWORD: campaign_password
-    volumes:
-      - ./db:/docker-entrypoint-initdb.d  # Initialize DB with SQL files
-    ports:
-      - "3306:3306"  # Expose the database port
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-networks:
-  app-network:
-    driver: bridge
+    www:
+        build: .
+        ports:
+            - "80:80"
+        volumes:
+            - ./www:/var/www/html/
+        links:
+            - db
+        networks:
+            - default
+    db:
+        image: mysql:5.7.28
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_DATABASE: cyfrif_campaign
+            MYSQL_USER: campaign_user
+            MYSQL_PASSWORD: campaign_password
+            MYSQL_ROOT_PASSWORD: root
+        volumes:
+            - ./dump:/docker-entrypoint-initdb.d
+            - persistent:/var/lib/mysql
+        networks:
+            - default
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        links:
+            - db:db
+        ports:
+            - 82:80
+        environment:
+            MYSQL_USER: campaign_user
+            MYSQL_PASSWORD: campaign_password
+            MYSQL_ROOT_PASSWORD: root
+volumes:
+    persistent:
