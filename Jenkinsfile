@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                // Checkout source code
+                // Checkout source code from Git repository
                 checkout scm
             }
         }

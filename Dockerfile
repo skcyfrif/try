@@ -1,25 +1,25 @@
 FROM php:8.0-apache
 
-# Install dependencies
-RUN apt-get update && apt-get install -y libicu-dev
+# Install necessary system dependencies
+RUN apt-get update && apt-get install -y libicu-dev git unzip
 
-# Install the intl extension
-RUN docker-php-ext-install intl
+# Install PHP extensions
+RUN docker-php-ext-install intl pdo_mysql
 
-# Set the working directory
+# Enable Apache mod_rewrite (important for CakePHP routing)
+RUN a2enmod rewrite
+
+# Set the working directory inside the container
 WORKDIR /var/www/html
 
-# Copy the current directory content into the container
+# Copy the application code into the container
 COPY . .
 
-# Install PDO MySQL extension
-RUN docker-php-ext-install pdo_mysql
-
-# Enable Apache mod_rewrite (if needed for your app)
-RUN a2enmod rewrite
+# Install Composer (CakePHP's dependency manager)
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Expose Apache port (80)
 EXPOSE 80
 
-# Apache is the default process in php:8.0-apache, so we don't need CMD for the PHP built-in server
+# Start Apache in the foreground
 CMD ["apache2-foreground"]
