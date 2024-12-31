@@ -1,5 +1,11 @@
 FROM php:8.0-apache
 
+# Install dependencies
+RUN apt-get update && apt-get install -y libicu-dev
+
+# Install the intl extension
+RUN docker-php-ext-install intl
+
 # Set the working directory
 WORKDIR /var/www/html
 
