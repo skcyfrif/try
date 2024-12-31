@@ -5,11 +5,11 @@ FROM php:7.4-apache
 RUN apt-get update && apt-get install -y \
       libicu-dev \
       libpq-dev \
-      default-mysql-client \  # Replaced mysql-client with default-mysql-client
-      git \                     # Git should be part of the apt-get install command
+      default-mysql-client \  
+      git \                     
       zip \
       unzip \
-    && rm -r /var/lib/apt/lists/* \
+    && rm -rf /var/lib/apt/lists/* \  # Proper cleanup of apt cache \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-install \
       intl \
@@ -26,7 +26,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ 
 # Set application folder as environment variable
 ENV APP_HOME /var/www/html
 
-# Change UID and GID of apache user to match the Docker user
+# Change UID and GID of apache user to match the Docker user (useful for local file access)
 RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 
 # Change web_root to CakePHP /var/www/html/webroot folder
@@ -39,9 +39,9 @@ RUN a2enmod rewrite
 COPY . $APP_HOME
 
 # Install PHP dependencies via Composer
-RUN composer install --no-interaction
+RUN composer install --no-interaction --optimize-autoloader
 
-# Change ownership of the application files
+# Change ownership of the application files to www-data (Apache user)
 RUN chown -R www-data:www-data $APP_HOME
 
 # Expose port 80 (Apache)
