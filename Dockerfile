@@ -5,8 +5,7 @@ FROM php:7.4-apache
 RUN apt-get update && apt-get install -y \
       libicu-dev \
       libpq-dev \
-      default-mysql-client \  
-      git \                     
+      default-mysql-client \ 
       zip \
       unzip \
     && rm -rf /var/lib/apt/lists/* \  # Proper cleanup of apt cache \
@@ -36,10 +35,11 @@ RUN sed -i -e "s/html/html\/webroot/g" /etc/apache2/sites-enabled/000-default.co
 RUN a2enmod rewrite
 
 # Copy the application code into the container
+# Make sure you are in the right directory and copying the right files
 COPY . $APP_HOME
 
 # Install PHP dependencies via Composer
-RUN composer install --no-interaction --optimize-autoloader
+RUN cd $APP_HOME && composer install --no-interaction --optimize-autoloader
 
 # Change ownership of the application files to www-data (Apache user)
 RUN chown -R www-data:www-data $APP_HOME
