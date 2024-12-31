@@ -5,14 +5,17 @@ FROM php:7.4-apache
 RUN apt-get update && apt-get install -y \
       libicu-dev \
       libpq-dev \
-      default-mysql-client \ 
+      default-mysql-client \  
       zip \
       unzip \
-    && rm -rf /var/lib/apt/lists/* \  # Proper cleanup of apt cache \
-    && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
+      libpng-dev \  
+      libjpeg62-turbo-dev \  
+      libfreetype6-dev \  
+    && rm -rf /var/lib/apt/lists/* \  
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \  
     && docker-php-ext-install \
-      intl \
-      mbstring \
+      gd \ 
+      intl \  
       pdo_mysql \
       pdo_pgsql \
       pgsql \
@@ -34,9 +37,11 @@ RUN sed -i -e "s/html/html\/webroot/g" /etc/apache2/sites-enabled/000-default.co
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Copy the application code into the container
-# Make sure you are in the right directory and copying the right files
+# Copy the application code into the container (ensure you are in the correct directory)
 COPY . $APP_HOME
+
+# Ensure composer.json is copied correctly
+RUN ls -la $APP_HOME
 
 # Install PHP dependencies via Composer
 RUN cd $APP_HOME && composer install --no-interaction --optimize-autoloader
