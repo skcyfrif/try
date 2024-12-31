@@ -1,11 +1,10 @@
-# Use the PHP Apache image with version 7.1.5
-FROM php:7.1.5-apache
+# Use a more recent PHP version with Apache
+FROM php:7.4-apache
 
-# Install necessary system dependencies and PHP extensions
+# Install system dependencies and enable PHP extensions
 RUN apt-get update && apt-get install -y \
       libicu-dev \
       libpq-dev \
-      libmcrypt-dev \
       mysql-client \
       git \
       zip \
@@ -15,8 +14,6 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install \
       intl \
       mbstring \
-      mcrypt \
-      pcntl \
       pdo_mysql \
       pdo_pgsql \
       pgsql \
@@ -26,29 +23,29 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer
 
-# Set application folder environment variable
+# Set application folder as environment variable
 ENV APP_HOME /var/www/html
 
-# Adjust Apache user and group to avoid permission issues
+# Change UID and GID of apache user to match the Docker user
 RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 
-# Update Apache document root to CakePHP's webroot
+# Change web_root to CakePHP /var/www/html/webroot folder
 RUN sed -i -e "s/html/html\/webroot/g" /etc/apache2/sites-enabled/000-default.conf
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Copy source code into the container
+# Copy the application code into the container
 COPY . $APP_HOME
 
-# Install PHP dependencies with Composer
+# Install PHP dependencies via Composer
 RUN composer install --no-interaction
 
-# Change ownership of the application folder to Apache user
+# Change ownership of the application files
 RUN chown -R www-data:www-data $APP_HOME
 
-# Expose port 80 to the host machine
+# Expose port 80 (Apache)
 EXPOSE 80
 
-# Run Apache in the foreground
+# Set Apache as the default process
 CMD ["apache2-foreground"]
