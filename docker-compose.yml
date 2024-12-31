@@ -1,11 +1,9 @@
-version: '2'
-# Define all services
 services:
   # CakePHP application
   cakephp:
     build: .  # Build from the Dockerfile in the current directory
     ports:
-      - "4041:80"  # Expose Apache on port 4000
+      - "4000:80"  # Expose Apache on port 4000
     depends_on:
       - mysql  # MySQL dependency
     volumes:
