@@ -5,7 +5,7 @@ FROM php:7.4-apache
 RUN apt-get update && apt-get install -y \
       libicu-dev \
       libpq-dev \
-      mysql-client \
+      default-mysql-client \  # Replaced mysql-client with default-mysql-client
       git \
       zip \
       unzip \
