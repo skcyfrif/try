@@ -12,10 +12,10 @@ RUN apt-get update && apt-get install -y \
       libjpeg62-turbo-dev \  
       libfreetype6-dev \  
     && rm -rf /var/lib/apt/lists/* \  
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \  
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \  # Configure GD extension
     && docker-php-ext-install \
-      gd \ 
-      intl \  
+      gd \  # Install GD extension
+      intl \  # Install INTL extension
       pdo_mysql \
       pdo_pgsql \
       pgsql \

@@ -3,19 +3,19 @@ version: '2'
 services:
   # CakePHP application
   cakephp:
-    build: .
+    build: .  # Build from the Dockerfile in the current directory
     ports:
-      - "4000:80"  # Exposing Apache server on port 4000
+      - "4041:80"  # Expose Apache on port 4000
     depends_on:
-      - mysql  # Dependency on MySQL container
+      - mysql  # MySQL dependency
     volumes:
-      - ./www:/var/www/html  # Mount the working directory to the container
+      - ./www:/var/www/html  # Mount the www directory to the container
     environment:
       - SECURITY_SALT=ashjg23697sds97139871298ashk
       - MYSQL_URL=mysql
       - MYSQL_USERNAME=root
       - MYSQL_PASSWORD=root
-      - VIRTUAL_HOST=cakephp.local  # Optional: if you're using a reverse proxy like NGINX
+      - VIRTUAL_HOST=cakephp.local  # Optional if using a reverse proxy like NGINX
     networks:
       - app_network
 
