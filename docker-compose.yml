@@ -16,7 +16,7 @@ services:
   db:
     image: mysql:5.7.28
     ports:
-      - "3309:3306"  # Expose port 3306 for MySQL access
+      - "3352:3306"  # Expose port 3306 for MySQL access
     environment:
       MYSQL_DATABASE: cyfrif_campaign
       MYSQL_USER: campaign_user
