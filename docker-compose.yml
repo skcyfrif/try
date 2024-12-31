@@ -4,7 +4,7 @@ services:
   www:
     build: .  # Use the Dockerfile in the current directory
     ports:
-      - "7170:80"  # Expose Apache on port 7170 (or change this as needed)
+      - "7175:80"  # Expose Apache on port 7170 (or change this as needed)
     volumes:
       - ./www:/var/www/html  # Mount the local code directory to the container's directory
     environment:
