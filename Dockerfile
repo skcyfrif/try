@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
       libicu-dev \
       libpq-dev \
       default-mysql-client \  # Replaced mysql-client with default-mysql-client
-      git \
+      git \                     # Git should be part of the apt-get install command
       zip \
       unzip \
     && rm -r /var/lib/apt/lists/* \
