@@ -4,14 +4,13 @@ services:
   www:
     build: .
     ports:
-      - "7170:80"  # Expose port 7170 on the host for the UI (instead of port 80)
+      - "7170:80"  # Expose port 8080 on the host for the UI (instead of port 80)
     volumes:
       - ./www:/var/www/html  # Mount local www folder to container's /var/www/html
     environment:
       - APACHE_DOCUMENT_ROOT=/var/www/html  # Ensure Apache serves the right directory
     networks:
       - app_network  # Use a custom network for better isolation
-    command: bash -c "composer install && apache2-foreground"  # Run Composer install before starting Apache
 
   # MySQL Database
   db:
