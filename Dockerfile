@@ -1,25 +1,54 @@
-FROM php:8.0-apache
+# Use the PHP Apache image with version 7.1.5
+FROM php:7.1.5-apache
 
-# Install necessary system dependencies
-RUN apt-get update && apt-get install -y libicu-dev git unzip
+# Install necessary system dependencies and PHP extensions
+RUN apt-get update && apt-get install -y \
+      libicu-dev \
+      libpq-dev \
+      libmcrypt-dev \
+      mysql-client \
+      git \
+      zip \
+      unzip \
+    && rm -r /var/lib/apt/lists/* \
+    && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
+    && docker-php-ext-install \
+      intl \
+      mbstring \
+      mcrypt \
+      pcntl \
+      pdo_mysql \
+      pdo_pgsql \
+      pgsql \
+      zip \
+      opcache
 
-# Install PHP extensions
-RUN docker-php-ext-install intl pdo_mysql
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer
 
-# Enable Apache mod_rewrite (important for CakePHP routing)
+# Set application folder environment variable
+ENV APP_HOME /var/www/html
+
+# Adjust Apache user and group to avoid permission issues
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
+
+# Update Apache document root to CakePHP's webroot
+RUN sed -i -e "s/html/html\/webroot/g" /etc/apache2/sites-enabled/000-default.conf
+
+# Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Set the working directory inside the container
-WORKDIR /var/www/html
+# Copy source code into the container
+COPY . $APP_HOME
 
-# Copy the application code into the container
-COPY . .
+# Install PHP dependencies with Composer
+RUN composer install --no-interaction
 
-# Install Composer (CakePHP's dependency manager)
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Change ownership of the application folder to Apache user
+RUN chown -R www-data:www-data $APP_HOME
 
-# Expose Apache port (80)
+# Expose port 80 to the host machine
 EXPOSE 80
 
-# Start Apache in the foreground
+# Run Apache in the foreground
 CMD ["apache2-foreground"]

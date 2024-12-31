@@ -26,7 +26,7 @@ pipeline {
             }
         }
 
-        stage('Build or Pull Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 script {
                     // Check if the Docker image already exists
@@ -58,10 +58,17 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 echo 'Deploying using Docker Compose...'
-                sh '''
-                    docker-compose down || echo "No containers to stop."
-                    docker-compose up -d
-                '''
+                script {
+                    // Ensure Docker Compose is up before starting
+                    sh '''
+                        docker-compose down || echo "No containers to stop."
+                        docker-compose up -d
+                    '''
+                    // Optional: Check if containers are running
+                    sh '''
+                        docker-compose ps
+                    '''
+                }
             }
         }
     }
