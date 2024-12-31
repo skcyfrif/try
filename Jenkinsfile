@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "cyfdoc/shiv" // Use your Docker Hub username/repository
         TAG = "latest1"
+        IMAGE_NAME = "${DOCKER_IMAGE}:${TAG}"
     }
 
     stages {
@@ -15,12 +16,21 @@ pipeline {
         }
         
         stage('Build or Pull Docker Image') {
-			steps {
-				sh '''
-                docker images -q ${DOCKER_IMAGE}:${TAG} && docker pull ${DOCKER_IMAGE}:${TAG} || docker build -t ${DOCKER_IMAGE}:${TAG} .
-                '''
-			}
-		}
+            steps {
+                script {
+                    // Check if the Docker image already exists
+                    def imageExists = sh(script: "docker images -q ${IMAGE_NAME}", returnStdout: true).trim()
+                    
+                    if (imageExists) {
+                        echo "Image ${IMAGE_NAME} exists. Pulling latest image."
+                        sh "docker pull ${IMAGE_NAME}"
+                    } else {
+                        echo "Image ${IMAGE_NAME} not found. Building image."
+                        sh "docker build -t ${IMAGE_NAME} ."
+                    }
+                }
+            }
+        }
 
         stage('Push to Docker Hub') {
             steps {
@@ -28,7 +38,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'cyfdoc', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh '''
                         echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-                        docker push ${DOCKER_IMAGE}
+                        docker push ${IMAGE_NAME}
                     '''
                 }
             }
