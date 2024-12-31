@@ -1,44 +1,54 @@
+version: "2"
 services:
-  # CakePHP application
-  cakephp:
-    build: .  # Build from the Dockerfile in the current directory
+  # Apache with PHP (UI App)
+  www:
+    build: .
     ports:
-      - "4000:80"  # Expose Apache on port 4000
+      - "7170:80"  # Expose port 8080 on the host for the UI (instead of port 80)
+    volumes:
+      - ./www:/var/www/html  # Mount local www folder to container's /var/www/html
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html  # Ensure Apache serves the right directory
+    networks:
+      - app_network  # Use a custom network for better isolation
+
+  # MySQL Database
+  db:
+    image: mysql:5.7.28
+    ports:
+      - "3352:3306"  # Expose port 3306 for MySQL access
+    environment:
+      MYSQL_DATABASE: cyfrif_campaign
+      MYSQL_USER: campaign_user
+      MYSQL_PASSWORD: campaign_password
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./dump:/docker-entrypoint-initdb.d  # Initialize database from dump folder
+      - persistent:/var/lib/mysql  # Persist MySQL data across container restarts
+    networks:
+      - app_network  # Ensure MySQL and other services are in the same network
+
+  # phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "82:80"  # Expose phpMyAdmin on port 82
+    environment:
+      PMA_HOST: db  # Link phpMyAdmin to the db service (MySQL)
+      MYSQL_USER: campaign_user
+      MYSQL_PASSWORD: campaign_password
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - app_network  # Same network for all services
     depends_on:
-      - mysql  # MySQL dependency
-    volumes:
-      - ./www:/var/www/html  # Mount the www directory to the container
-    environment:
-      - SECURITY_SALT=ashjg23697sds97139871298ashk
-      - MYSQL_URL=mysql
-      - MYSQL_USERNAME=root
-      - MYSQL_PASSWORD=root
-      - VIRTUAL_HOST=cakephp.local  # Optional if using a reverse proxy like NGINX
-    networks:
-      - app_network
+      - db  # Ensure phpMyAdmin starts after the database
 
-  # MySQL service
-  mysql:
-    image: mysql:5.6.36
-    volumes:
-      - ./dump:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=cyfrif_campaign
-    networks:
-      - app_network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-      timeout: 10s
-
-# Persistent data for MySQL
+# Define persistent volume for MySQL data storage
 volumes:
-  mysql_data:
+  persistent:
+    driver: local  # Ensure data is stored persistently across container restarts
 
-# Custom network for isolated communication
+# Define custom network for communication between containers
 networks:
   app_network:
     driver: bridge
