@@ -15,8 +15,14 @@ RUN apt-get install -y libzip-dev && docker-php-ext-install zip
 # Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+# Set working directory
+WORKDIR /var/www/html
+
 # Copy the application files
 COPY ./www/composer.json ./www/composer.lock /var/www/html/
 
 # Install PHP dependencies using Composer
 RUN composer install --no-interaction --optimize-autoloader
+
+# Expose the Apache server port
+EXPOSE 80
