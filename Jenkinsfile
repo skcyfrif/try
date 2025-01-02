@@ -10,7 +10,6 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                // Checkout source code
                 checkout scm
             }
         }
@@ -29,9 +28,7 @@ pipeline {
         stage('Build or Pull Docker Image') {
             steps {
                 script {
-                    // Check if the Docker image already exists
                     def imageExists = sh(script: "docker images -q ${IMAGE_NAME}", returnStdout: true).trim()
-
                     if (imageExists) {
                         echo "Image ${IMAGE_NAME} exists. Pulling latest image."
                         sh "docker pull ${IMAGE_NAME}"
