@@ -23,7 +23,7 @@ RUN a2enmod rewrite
 WORKDIR /var/www/html
 
 # Copy the application code into the container
-COPY . .
+COPY ./www/composer.json ./www/composer.lock /var/www/html/
 
 # Install Composer (CakePHP's dependency manager)
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
